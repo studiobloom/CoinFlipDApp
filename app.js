@@ -211,68 +211,30 @@ const contractABI = [
 	}
 ];
 
-const contract = new web3.eth.Contract(contractABI, contractAddress);
+let contract;
 
-async function placeBet(receiverAddress, betAmount) {
-    console.log('placeBet called');
-    const accounts = await web3.eth.getAccounts();
-    const sender = accounts[0];
+function setupContract() {
+    contract = new web3.eth.Contract(contractABI, contractAddress);
 
-    contract.methods
-        .placeBet(receiverAddress)
-        .send({ from: sender, value: web3.utils.toWei(betAmount, 'ether') });
+    // Event listeners
+    contract.events.BetPlaced().on('data', (event) => {
+        console.log('Bet Placed:', event);
+    });
+
+    contract.events.BetAccepted().on('data', (event) => {
+        console.log('Bet Accepted:', event);
+    });
+
+    contract.events.BetRevoked().on('data', (event) => {
+        console.log('Bet Revoked:', event);
+    });
+
+    contract.events.CoinFlipResult().on('data', (event) => {
+        console.log('Coin Flip Result:', event);
+    });
+
+    contract.events.WinnerPaid().on('data', (event) => {
+        console.log('Winner Paid:', event);
+    });
 }
-
-async function acceptBet() {
-    const accounts = await web3.eth.getAccounts();
-    const receiver = accounts[0];
-
-    contract.methods
-        .acceptBet()
-        .send({ from: receiver, value: await contract.methods.betAmount().call({ from: receiver }) });
-}
-
-async function revokeBet() {
-    const accounts = await web3.eth.getAccounts();
-    const sender = accounts[0];
-
-    contract.methods
-        .revokeBet()
-        .send({ from: sender });
-}
-
-document.getElementById('placeBetButton').addEventListener('click', async () => {
-    const receiverAddress = document.getElementById('receiverAddress').value;
-    const betAmount = document.getElementById('betAmount').value;
-    await placeBet(receiverAddress, betAmount);
-});
-
-document.getElementById('acceptBetButton').addEventListener('click', async () => {
-    await acceptBet();
-});
-
-document.getElementById('revokeBetButton').addEventListener('click', async () => {
-    await revokeBet();
-});
-
-// Event listeners
-contract.events.BetPlaced().on('data', (event) => {
-    console.log('Bet Placed:', event);
-});
-
-contract.events.BetAccepted().on('data', (event) => {
-    console.log('Bet Accepted:', event);
-});
-
-contract.events.BetRevoked().on('data', (event) => {
-    console.log('Bet Revoked:', event);
-});
-
-contract.events.CoinFlipResult().on('data', (event) => {
-    console.log('Coin Flip Result:', event);
-});
-
-contract.events.WinnerPaid().on('data', (event) => {
-    console.log('Winner Paid:', event);
-});
 
