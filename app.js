@@ -208,7 +208,7 @@ async function initialize() {
 	"type": "function"
 }
 ];
-const contract = new web3.eth.Contract(contractABI, contractAddress);
+const contract = web3.eth.contract(contractABI, contractAddress);
 
 async function placeBet(receiverAddress, betAmount) {
     const accounts = await window.ethereum.request({ method: 'eth_accounts' });
