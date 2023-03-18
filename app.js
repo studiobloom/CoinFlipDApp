@@ -214,6 +214,7 @@ const contractABI = [
 const contract = new web3.eth.Contract(contractABI, contractAddress);
 
 async function placeBet(receiverAddress, betAmount) {
+    console.log('placeBet called');
     const accounts = await web3.eth.getAccounts();
     const sender = accounts[0];
 
