@@ -1,5 +1,3 @@
-import Web3 from 'web3';
-
 let contractInstance;
 
 async function initWeb3() {
