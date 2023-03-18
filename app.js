@@ -11,10 +11,11 @@ async function initWeb3() {
     }
 }
 
-initWeb3();
+async function initialize() {
+    await initWeb3();
 
-const contractAddress = '0x0cde2C81aeaC28b672Af6c97a9C631073Fa8181e';
-const contractABI = [
+    const contractAddress = '0x0cde2C81aeaC28b672Af6c97a9C631073Fa8181e';
+    const contractABI = [
 {
 	"inputs": [],
 	"name": "acceptBet",
@@ -273,3 +274,5 @@ contract.events.CoinFlipResult().on('data', (event) => {
 contract.events.WinnerPaid().on('data', (event) => {
     console.log('Winner Paid:', event);
 });
+
+initialize();
