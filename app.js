@@ -1,5 +1,3 @@
-let contractInstance;
-
 async function initWeb3() {
     if (window.ethereum) {
         try {
