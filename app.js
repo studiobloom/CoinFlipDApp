@@ -275,4 +275,6 @@ contract.events.WinnerPaid().on('data', (event) => {
     console.log('Winner Paid:', event);
 });
 
-initialize();
+initWeb3().then(() => {
+    initialize();
+});
