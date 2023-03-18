@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coin Flip DApp</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1>Coin Flip DApp</h1>
+    <div>
+        <label for="receiverAddress">Receiver Address:</label>
+        <input type="text" id="receiverAddress">
+    </div>
+    <div>
+        <label for="betAmount">Bet Amount (Matic):</label>
+        <input type="text" id="betAmount">
+    </div>
+    <button id="placeBetButton">Place Bet</button>
+    <button id="acceptBetButton">Accept Bet</button>
+    <button id="revokeBetButton">Revoke Bet</button>
+    
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.6.1/dist/web3.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
