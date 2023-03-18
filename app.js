@@ -1,18 +1,15 @@
-async function initWeb3() {
-    if (window.ethereum) {
-        try {
-            await window.ethereum.request({ method: 'eth_requestAccounts' });
-            window.web3 = new Web3(window.ethereum);
-        } catch (error) {
-            console.error('User denied account access');
-        }
-    } else {
-        console.error('No Ethereum provider detected');
-    }
-}
-
 async function initialize() {
-    await initWeb3();
+    if (!window.ethereum) {
+        console.error('No Ethereum provider detected');
+        return;
+    }
+
+    try {
+        await window.ethereum.request({ method: 'eth_requestAccounts' });
+    } catch (error) {
+        console.error('User denied account access');
+    }
+
 
     const contractAddress = '0x0cde2C81aeaC28b672Af6c97a9C631073Fa8181e';
     const contractABI = [
@@ -211,7 +208,7 @@ async function initialize() {
 	"type": "function"
 }
 ];
-const contract = new window.web3.eth.Contract(contractABI, contractAddress);
+const contract = new window.ethereum.Contract(contractABI, contractAddress);
 
 async function placeBet(receiverAddress, betAmount) {
     const accounts = await window.ethereum.request({ method: 'eth_accounts' });
@@ -274,7 +271,5 @@ contract.events.CoinFlipResult().on('data', (event) => {
 contract.events.WinnerPaid().on('data', (event) => {
     console.log('Winner Paid:', event);
 });
-
-initWeb3().then(() => {
-    initialize();
-});
+}
+initialize();
