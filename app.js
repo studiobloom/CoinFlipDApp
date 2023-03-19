@@ -12,9 +12,201 @@ async function initialize() {
 
     const contractAddress = '0x0cde2C81aeaC28b672Af6c97a9C631073Fa8181e';
     const contractABI = [
-      // ABI JSON
-    ];
-    
+{
+	"inputs": [],
+	"name": "acceptBet",
+	"outputs": [],
+	"stateMutability": "payable",
+	"type": "function"
+},
+{
+	"anonymous": false,
+	"inputs": [
+		{
+			"indexed": true,
+			"internalType": "address",
+			"name": "_receiver",
+			"type": "address"
+		}
+	],
+	"name": "BetAccepted",
+	"type": "event"
+},
+{
+	"anonymous": false,
+	"inputs": [
+		{
+			"indexed": true,
+			"internalType": "address",
+			"name": "_sender",
+			"type": "address"
+		},
+		{
+			"indexed": true,
+			"internalType": "address",
+			"name": "_receiver",
+			"type": "address"
+		},
+		{
+			"indexed": false,
+			"internalType": "uint256",
+			"name": "_betAmount",
+			"type": "uint256"
+		}
+	],
+	"name": "BetPlaced",
+	"type": "event"
+},
+{
+	"anonymous": false,
+	"inputs": [
+		{
+			"indexed": true,
+			"internalType": "address",
+			"name": "_sender",
+			"type": "address"
+		}
+	],
+	"name": "BetRevoked",
+	"type": "event"
+},
+{
+	"anonymous": false,
+	"inputs": [
+		{
+			"indexed": true,
+			"internalType": "address",
+			"name": "_winner",
+			"type": "address"
+		},
+		{
+			"indexed": false,
+			"internalType": "uint256",
+			"name": "_amount",
+			"type": "uint256"
+		}
+	],
+	"name": "CoinFlipResult",
+	"type": "event"
+},
+{
+	"inputs": [
+		{
+			"internalType": "address payable",
+			"name": "_receiver",
+			"type": "address"
+		}
+	],
+	"name": "placeBet",
+	"outputs": [],
+	"stateMutability": "payable",
+	"type": "function"
+},
+{
+	"inputs": [],
+	"name": "revokeBet",
+	"outputs": [],
+	"stateMutability": "nonpayable",
+	"type": "function"
+},
+{
+	"anonymous": false,
+	"inputs": [
+		{
+			"indexed": true,
+			"internalType": "address",
+			"name": "_winner",
+			"type": "address"
+		},
+		{
+			"indexed": false,
+			"internalType": "uint256",
+			"name": "_amount",
+			"type": "uint256"
+		}
+	],
+	"name": "WinnerPaid",
+	"type": "event"
+},
+{
+	"inputs": [],
+	"name": "acceptDeadline",
+	"outputs": [
+		{
+			"internalType": "uint256",
+			"name": "",
+			"type": "uint256"
+		}
+	],
+	"stateMutability": "view",
+	"type": "function"
+},
+{
+	"inputs": [],
+	"name": "betAccepted",
+	"outputs": [
+		{
+			"internalType": "bool",
+			"name": "",
+			"type": "bool"
+		}
+	],
+	"stateMutability": "view",
+	"type": "function"
+},
+{
+	"inputs": [],
+	"name": "betAmount",
+	"outputs": [
+		{
+			"internalType": "uint256",
+			"name": "",
+			"type": "uint256"
+		}
+	],
+	"stateMutability": "view",
+	"type": "function"
+},
+{
+	"inputs": [],
+	"name": "createdAt",
+	"outputs": [
+		{
+			"internalType": "uint256",
+			"name": "",
+			"type": "uint256"
+		}
+	],
+	"stateMutability": "view",
+	"type": "function"
+},
+{
+	"inputs": [],
+	"name": "receiver",
+	"outputs": [
+		{
+			"internalType": "address payable",
+			"name": "",
+			"type": "address"
+		}
+	],
+	"stateMutability": "view",
+	"type": "function"
+},
+{
+	"inputs": [],
+	"name": "sender",
+	"outputs": [
+		{
+			"internalType": "address payable",
+			"name": "",
+			"type": "address"
+		}
+	],
+	"stateMutability": "view",
+	"type": "function"
+}
+];
     const web3 = new Web3(window.ethereum);
     const contract = new web3.eth.Contract(contractABI, contractAddress);
 
