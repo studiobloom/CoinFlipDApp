@@ -75,29 +75,29 @@ async function initialize() {
         await revokeBet();
     });
 
-    // Event listeners
-    contract.events.BetPlaced().on('data', (event) => {
-        console.log('Bet Placed:', event);
-        checkPendingBets();
-    });
+// Event listeners
+contract.events.BetPlaced.on('data', (event) => {
+    console.log('Bet Placed:', event);
+    checkPendingBets();
+});
 
-    contract.events.BetAccepted().on('data', (event) => {
-        console.log('Bet Accepted:', event);
-        checkPendingBets();
-    });
+contract.events.BetAccepted.on('data', (event) => {
+    console.log('Bet Accepted:', event);
+    checkPendingBets();
+});
 
-    contract.events.BetRevoked().on('data', (event) => {
-        console.log('Bet Revoked:', event);
-        checkPendingBets();
-    });
+contract.events.BetRevoked.on('data', (event) => {
+    console.log('Bet Revoked:', event);
+    checkPendingBets();
+});
 
-    contract.events.CoinFlipResult().on('data', (event) => {
-        console.log('Coin Flip Result:', event);
-    });
+contract.events.CoinFlipResult.on('data', (event) => {
+    console.log('Coin Flip Result:', event);
+});
 
-    contract.events.WinnerPaid().on('data', (event) => {
-        console.log('Winner Paid:', event);
-    });
+contract.events.WinnerPaid.on('data', (event) => {
+    console.log('Winner Paid:', event);
+});
 
     // Initialize the check for pending bets
     checkPendingBets();
