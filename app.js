@@ -96,7 +96,7 @@ async function initialize() {
     });
 
     contract.events.WinnerPaid().on('data', (event) => {
-        console.log('Winner Paid:', event
+        console.log('Winner Paid:', event);
     });
 
     // Initialize the check for pending bets
