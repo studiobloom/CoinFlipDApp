@@ -1,278 +1,63 @@
-async function initialize() {
-    if (!window.ethereum) {
-        console.error('No Ethereum provider detected');
-        return;
-    }
+const contractAddress = "0x0cde2c81aeac28b672af6c97a9c631073fa8181e";
+const contractABI = [{"inputs":[{"internalType":"address","name":"_receiver","type":"address"}],"name":"placeBet","outputs":[],"stateMutability":"payable","type":"function"},{"inputs":[{"internalType":"uint256","name":"","type":"uint256"},{"internalType":"address","name":"","type":"address"}],"name":"bets","outputs":[{"internalType":"address payable","name":"sender","type":"address"},{"internalType":"address payable","name":"receiver","type":"address"},{"internalType":"uint256","name":"betAmount","type":"uint256"},{"internalType":"uint256","name":"createdAt","type":"uint256"},{"internalType":"uint256","name":"acceptDeadline","type":"uint256"},{"internalType":"bool","name":"betAccepted","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"_index","type":"uint256"}],"name":"acceptBet","outputs":[],"stateMutability":"payable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_index","type":"uint256"}],"name":"revokeBet","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_index","type":"uint256"}],"name":"getBetDetails","outputs":[{"internalType":"address","name":"sender","type":"address"},{"internalType":"address","name":"receiver","type":"address"},{"internalType":"uint256","name":"betAmount","type":"uint256"},{"internalType":"uint256","name":"createdAt","type":"uint256"},{"internalType":"uint256","name":"acceptDeadline","type":"uint256"},{"internalType":"bool","name":"betAccepted","type":"bool"}],"stateMutability":"view","type":"function"}];
+let contractInstance;
 
+window.addEventListener('load', async () => {
+  if (window.ethereum) {
+    window.web3 = new Web3(ethereum);
     try {
-        await window.ethereum.request({ method: 'eth_requestAccounts' });
-    } catch (error) {
-        console.error('User denied account access');
+      await ethereum.enable();
+      initContract();
+    } catch (err) {
+      console.log(err);
     }
-
-    const contractAddress = '0xA82037166DaB7816c77f6Ff796f3688770AF25f3';
-    const contractABI = [
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "_index",
-				"type": "uint256"
-			}
-		],
-		"name": "acceptBet",
-		"outputs": [],
-		"stateMutability": "payable",
-		"type": "function"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "_receiver",
-				"type": "address"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "_betAmount",
-				"type": "uint256"
-			}
-		],
-		"name": "BetAccepted",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "_sender",
-				"type": "address"
-			},
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "_receiver",
-				"type": "address"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "_betAmount",
-				"type": "uint256"
-			}
-		],
-		"name": "BetPlaced",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "_winner",
-				"type": "address"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "_amount",
-				"type": "uint256"
-			}
-		],
-		"name": "CoinFlipResult",
-		"type": "event"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address payable",
-				"name": "_receiver",
-				"type": "address"
-			}
-		],
-		"name": "placeBet",
-		"outputs": [],
-		"stateMutability": "payable",
-		"type": "function"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "_winner",
-				"type": "address"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "_amount",
-				"type": "uint256"
-			}
-		],
-		"name": "WinnerPaid",
-		"type": "event"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "",
-				"type": "address"
-			},
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"name": "bets",
-		"outputs": [
-			{
-				"internalType": "address payable",
-				"name": "sender",
-				"type": "address"
-			},
-			{
-				"internalType": "address payable",
-				"name": "receiver",
-				"type": "address"
-			},
-			{
-				"internalType": "uint256",
-				"name": "betAmount",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "createdAt",
-				"type": "uint256"
-			},
-			{
-				"internalType": "bool",
-				"name": "betAccepted",
-				"type": "bool"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	}
-];
-    const web3 = new Web3(window.ethereum);
-    const contract = new web3.eth.Contract(contractABI, contractAddress);
-
-    async function checkPendingBets() {
-        const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-        const account = accounts[0];
-
-        const betAccepted = await contract.methods.betAccepted().call({ from: account });
-        const pendingBetsDiv = document.getElementById('pendingBets');
-        
-        if (betAccepted) {
-            pendingBetsDiv.innerHTML = '<p>No pending bets.</p>';
-        } else {
-            const betAmount = await contract.methods.betAmount().call({ from: account });
-            const betAmountInEther = web3.utils.fromWei(betAmount, 'ether');
-            pendingBetsDiv.innerHTML = `<p>Pending bet: ${betAmountInEther} Ether</p>`;
-        }
-    }
-
-    async function placeBet(receiverAddress, betAmount) {
-        const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-        const sender = accounts[0];
-
-        contract.methods
-            .placeBet(receiverAddress)
-            .send({ from: sender, value: web3.utils.toWei(betAmount, 'ether') });
-    }
-
-    async function acceptBet() {
-        const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-        const receiver = accounts[0];
-
-        contract.methods
-            .acceptBet()
-            .send({ from: receiver, value: await contract.methods.betAmount().call({ from: receiver }) });
-    }
-
-    async function revokeBet() {
-        const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-        const sender = accounts[0];
-
-        contract.methods
-            .revokeBet()
-            .send({ from: sender });
-    }
-
-    document.getElementById('placeBetButton').addEventListener('click', async () => {
-        const receiverAddress = document.getElementById('receiverAddress').value;
-        const betAmount = document.getElementById('betAmount').value;
-        await placeBet(receiverAddress, betAmount);
-    });
-
-    document.getElementById('acceptBetButton').addEventListener('click', async () => {
-        await acceptBet();
-    });
-
-    document.getElementById('revokeBetButton').addEventListener('click', async () => {
-        await revokeBet();
-    });
-
-// Event listeners
-contract.events.BetPlaced({
-    fromBlock: 'latest'
-}, function (error, event) {
-    console.log('Bet Placed:', event);
-    checkPendingBets();
+  } else if (window.web3) {
+    window.web3 = new Web3(web3.currentProvider);
+    initContract();
+  } else {
+    console.log('Metamask not detected!');
+  }
 });
 
-contract.events.BetAccepted({
-    fromBlock: 'latest'
-}, function (error, event) {
-    console.log('Bet Accepted:', event);
-    checkPendingBets();
-});
-
-contract.events.BetRevoked({
-    fromBlock: 'latest'
-}, function (error, event) {
-    console.log('Bet Revoked:', event);
-    checkPendingBets();
-});
-
-contract.events.CoinFlipResult({
-    fromBlock: 'latest'
-}, function (error, event) {
-    console.log('Coin Flip Result:', event);
-});
-
-contract.events.WinnerPaid({
-    fromBlock: 'latest'
-}, function (error, event) {
-    console.log('Winner Paid:', event);
-});
-
-
-    // Initialize the check for pending bets
-    checkPendingBets();
-
-    // Listen for chain events
-    window.ethereum.on('chainChanged', (_) => {
-        window.location.reload();
-    });
-
-    // Listen for account changes
-    window.ethereum.on('accountsChanged', (_) => {
-        window.location.reload();
-    });
+function initContract() {
+  contractInstance = new web3.eth.Contract(contractABI, contractAddress);
+  console.log('Contract instance created!');
 }
 
-window.addEventListener('DOMContentLoaded', initialize);
+async function placeBet() {
+  const betAmount = document.getElementById("betAmount").value;
+  const receiverAddress = document.getElementById("receiverAddress").value;
+  await contractInstance.methods.placeBet(receiverAddress).send({from: web3.eth.defaultAccount, value: web3.utils.toWei(betAmount)});
+  console.log('Bet placed successfully!');
+}
+
+async function acceptBet(betIndex) {
+  const account = web3.eth.defaultAccount;
+  const bet = await contractInstance.methods.bets(account, betIndex).call();
+  const betAmount = bet.betAmount;
+  await contractInstance.methods.acceptBet(betIndex).send({from: account, value: betAmount});
+  console.log('Bet accepted successfully!');
+}
+
+async function getBets() {
+  const betCount = await contract.methods.getBetCount().call();
+
+  // Clear the table
+  $("#bet-table tbody").empty();
+
+  // Add new bets to the table
+  for (let i = 0; i < betCount; i++) {
+    const bet = await contract.methods.getBets(i).call();
+    const createdAt = new Date(bet[2] * 1000).toLocaleString();
+
+    if (bet[0] != 0 && !bet[3]) { // Check if sender address is set and bet is not accepted yet
+      const row = $("<tr>").appendTo("#bet-table tbody");
+      $("<td>").text(i).appendTo(row);
+      $("<td>").text(bet[0]).appendTo(row);
+      $("<td>").text(web3.utils.fromWei(bet[1], "ether")).appendTo(row);
+      $("<td>").text(createdAt).appendTo(row);
+      $("<td>").html(`<button class="btn btn-primary btn-sm" onclick="acceptBet(${i})">Accept</button>`).appendTo(row);
+    }
+  }
+}
 
