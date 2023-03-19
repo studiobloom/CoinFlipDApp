@@ -1,3 +1,5 @@
+let web3;
+
 async function initialize() {
     if (!window.ethereum) {
         console.error('No Ethereum provider detected');
@@ -10,7 +12,9 @@ async function initialize() {
         console.error('User denied account access');
     }
 
-    const web3 = new Web3(window.ethereum);
+    // Instantiate web3 using the window.ethereum provider
+    web3 = new Web3(window.ethereum);
+
     const contractAddress = '0x0cde2C81aeaC28b672Af6c97a9C631073Fa8181e';
     const contractABI = [
 {
