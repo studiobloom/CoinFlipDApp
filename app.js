@@ -20,7 +20,7 @@ window.addEventListener('load', async () => {
 });
 
 function initContract() {
-  const contractAddress = '0x0cde2c81aeac28b672af6c97a9c631073fa8181e';
+  const contractAddress = '0x4bfe77f7fBE78a4524C4E3d8e9D5827460684b03';
   const contractABI = [
     // Contract ABI definition
   ];
