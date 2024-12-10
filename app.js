@@ -1,100 +1,233 @@
-let contractInstance;
-
-window.addEventListener('load', async () => {
-  if (window.ethereum) {
-    window.web3 = new Web3(ethereum);
-    try {
-      await ethereum.enable();
-      initContract();
-      displayPendingBets();
-    } catch (err) {
-      console.log(err);
-    }
-  } else if (window.web3) {
-    window.web3 = new Web3(web3.currentProvider);
-    initContract();
-    displayPendingBets();
-  } else {
-    console.log('Metamask not detected!');
+document.addEventListener("DOMContentLoaded", async () => {
+  if (typeof window.ethereum === "undefined") {
+      alert("Please install MetaMask!");
+      return;
   }
-});
 
-function initContract() {
-  const contractAddress = '0x4bfe77f7fBE78a4524C4E3d8e9D5827460684b03';
+  const web3 = new Web3(window.ethereum);
+
+  try {
+      // Request MetaMask accounts
+      await window.ethereum.request({ method: "eth_requestAccounts" });
+  } catch (error) {
+      console.error("User denied account access:", error);
+      return;
+  }
+
+  // Contract details
+  const contractAddress = "0xe602b032997923378055a3BF6bd3cdD7a4570209";
   const contractABI = [
-    // Contract ABI definition
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "_receiver",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "_betAmount",
+          "type": "uint256"
+        }
+      ],
+      "name": "BetAccepted",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "_sender",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "_receiver",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "_betAmount",
+          "type": "uint256"
+        }
+      ],
+      "name": "BetPlaced",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "_winner",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "_amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "CoinFlipResult",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "_winner",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "_amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "WinnerPaid",
+      "type": "event"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_index",
+          "type": "uint256"
+        }
+      ],
+      "name": "acceptBet",
+      "outputs": [],
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "bets",
+      "outputs": [
+        {
+          "internalType": "address payable",
+          "name": "sender",
+          "type": "address"
+        },
+        {
+          "internalType": "address payable",
+          "name": "receiver",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "betAmount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "createdAt",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bool",
+          "name": "betAccepted",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address payable",
+          "name": "_receiver",
+          "type": "address"
+        }
+      ],
+      "name": "placeBet",
+      "outputs": [],
+      "stateMutability": "payable",
+      "type": "function"
+    }
   ];
 
-  contractInstance = new web3.eth.Contract(contractABI, contractAddress);
-  console.log('Contract instance created!');
-}
+  const contract = new web3.eth.Contract(contractABI, contractAddress);
 
-async function placeBet() {
-  const receiverAddress = document.getElementById('receiverAddress').value;
-  const betAmount = document.getElementById('betAmount').value;
-  await contractInstance.methods.placeBet(receiverAddress).send({ from: web3.eth.defaultAccount, value: web3.utils.toWei(betAmount) });
-  console.log('Bet placed successfully!');
-  displayPendingBets();
-}
+  // Automatically fetch and display bets for the signed-in address
+  async function fetchBetsForUser() {
+      try {
+          const accounts = await web3.eth.getAccounts();
+          const userAddress = accounts[0];
 
-async function acceptBet() {
-  const bets = await contractInstance.methods.bets(web3.eth.defaultAccount).call();
-  const pendingBets = bets.filter(bet => !bet.betAccepted);
-  if (pendingBets.length > 0) {
-    const betIndex = prompt(`Enter the index of the bet you want to accept (0-${pendingBets.length - 1}):`);
-    if (betIndex !== null) {
-      await contractInstance.methods.acceptBet(betIndex).send({ from: web3.eth.defaultAccount });
-      console.log('Bet accepted successfully!');
-      displayPendingBets();
-    }
-  } else {
-    console.log('No pending bets to accept.');
+          console.log("Fetching bets for address:", userAddress);
+
+          const pendingBets = [];
+          const maxBetsToCheck = 10;
+
+          for (let i = 0; i < maxBetsToCheck; i++) {
+              try {
+                  const bet = await contract.methods.bets(userAddress, i).call();
+                  if (bet && bet.sender !== "0x0000000000000000000000000000000000000000") {
+                      pendingBets.push(bet);
+                  } else {
+                      break;
+                  }
+              } catch (err) {
+                  console.log(`No bet found at index ${i}:`, err.message);
+                  break;
+              }
+          }
+
+          console.log("Fetched Bets:", pendingBets);
+          displayBets(pendingBets);
+      } catch (err) {
+          console.error("Error fetching bets:", err);
+      }
   }
-}
 
-async function revokeBet() {
-  const bets = await contractInstance.methods.bets(web3.eth.defaultAccount).call();
-  const pendingBets = bets.filter(bet => !bet.betAccepted);
-  if (pendingBets.length > 0) {
-    const betIndex = prompt(`Enter the index of the bet you want to revoke (0-${pendingBets.length - 1}):`);
-    if (betIndex !== null) {
-      await contractInstance.methods.revokeBet(betIndex).send({ from: web3.eth.defaultAccount });
-      console.log('Bet revoked successfully!');
-      displayPendingBets();
-    }
-  } else {
-    console.log('No pending bets to revoke.');
+  function displayBets(bets) {
+      const betsDiv = document.getElementById("fetchBetsOutput");
+      betsDiv.innerHTML = "";
+
+      if (bets.length === 0) {
+          betsDiv.textContent = "No pending bets found.";
+          return;
+      }
+
+      bets.forEach((bet, index) => {
+          const betDiv = document.createElement("div");
+          betDiv.className = "bet-entry";
+          betDiv.innerHTML = `
+              <p><strong>Bet ${index + 1}:</strong></p>
+              <p>Sender: ${bet.sender}</p>
+              <p>Receiver: ${bet.receiver}</p>
+              <p>Amount: ${web3.utils.fromWei(bet.betAmount, "ether")} POL</p>
+              <p>Created At: ${new Date(bet.createdAt * 1000).toLocaleString()}</p>
+              <p>Accepted: ${bet.betAccepted ? "Yes" : "No"}</p>
+              <hr />
+          `;
+          betsDiv.appendChild(betDiv);
+      });
   }
-}
-
-async function displayPendingBets() {
-  const bets = await contractInstance.methods.bets(web3.eth.defaultAccount).call();
-
-  const pendingBets = bets.filter(bet => !bet.betAccepted);
-
-  const pendingBetsContainer = document.getElementById('pendingBets');
-  pendingBetsContainer.innerHTML = '';
-
-  if (pendingBets.length > 0) {
-    const title = document.createElement('h3');
-    title.textContent = 'Pending Bets';
-    pendingBetsContainer.appendChild(title);
-
-    const betList = document.createElement('ul');
-    pendingBets.forEach((bet, index) => {
-      const listItem = document.createElement('li');
-      listItem.textContent = `Bet ${index + 1} - Receiver: ${bet.receiver}, Amount: ${web3.utils.fromWei(bet.betAmount)} ETH`;
-      betList.appendChild(listItem);
-    });
-
-    pendingBetsContainer.appendChild(betList);
-  } else {
-    const message = document.createElement('p');
-    message.textContent = 'No pending bets.';
-    pendingBetsContainer.appendChild(message);
-  }
-}
-
-document.getElementById('placeBetButton').addEventListener('click', placeBet);
-document.getElementById('acceptBetButton').addEventListener('click', acceptBet);
-document.getElementById('revokeBetButton').addEventListener('click', revokeBet);
+  fetchBetsForUser();
+});

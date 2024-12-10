@@ -1,76 +1,92 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Coinflip DApp</title>
-  <style>
-    body {
-      background-color: #2c3e50;
-      color: #ecf0f1;
-      font-family: Arial, sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      margin: 0;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PolyBet</title>
+    <style>
+      body {
+          margin: 10vw;
+          font-family: Arial, Helvetica, sans-serif;
+          background-image: url("bg.jpg");
+          background-size: cover; /* Ensures the image covers the entire element */
+          background-repeat: no-repeat; /* Prevents the image from repeating */
+          background-position: cover; /* Centers the image */
+          background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black */
+          background-blend-mode: overlay;
+        }
 
-    h1,
-    h2 {
-      color: #ecf0f1;
-      text-align: center;
-    }
+        h1, h2 {
+            color: #4d2896;
+        }
 
-    input[type="text"] {
-      background-color: #34495e;
-      border: none;
-      color: #ecf0f1;
-      padding: 5px;
-      margin-bottom: 10px;
-    }
+        input {
+            padding: 8px;
+            margin: 5px;
+            border: 1px solid #303030;
+            background-color: #00000057;
+            border-radius: 4px;
+            width: 300px;
+            backdrop-filter: blur(10px);
+        }
 
-    button {
-      background-color: #2980b9;
-      border: none;
-      color: #ecf0f1;
-      padding: 10px 20px;
-      cursor: pointer;
-    }
+        button {
+            padding: 10px 20px;
+            background-color: #4d2896;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
 
-    button:hover {
-      background-color: #3498db;
-    }
+        button:hover {
+            background-color: #4d2896;
+        }
 
-    #pendingBets {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-  </style>
+        .section {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #303030;
+            border-radius: 8px;
+            background-color: #12121265;
+            backdrop-filter: blur(10px);
+        }
+
+        .section h2 {
+            margin-top: 0;
+        }
+
+        .output {
+            margin-top: 10px;
+            background-color: #0000007a;
+            padding: 10px;
+            border: 1px solid #303030;
+            border-radius: 4px;
+            font-family: monospace;
+            backdrop-filter: blur(10px);
+        }
+    </style>
 </head>
-
 <body>
-  <h1>Coinflip DApp</h1>
+    <h1>PolyBet</h1>
 
-  <div id="pendingBets">
-    <p>Checking for pending bets...</p>
+    <div class="section">
+        <h2>Send a Bet</h2>
+        <input type="text" id="receiverAddress" placeholder="Receiver Address (e.g., 0x...)" />
+        <input type="text" id="betAmount" placeholder="Bet Amount (POL)" />
+        <button id="placeBetButton">Place Bet</button>
+        <div id="placeBetOutput" class="output"></div>
+    </div>
+
+    <div class="section">
+      <h2>Fetched Bets</h2>
+      <div id="fetchBetsOutput" class="output"></div>
   </div>
+  
 
-  <h2>Place Bet</h2>
-  <input type="text" id="receiverAddress" placeholder="Receiver Address">
-  <input type="text" id="betAmount" placeholder="Bet Amount (in Ether)">
-  <button id="placeBetButton">Place Bet</button>
-
-  <h2>Accept Bet</h2>
-  <button id="acceptBetButton">Accept Bet</button>
-
-  <h2>Revoke Bet</h2>
-  <button id="revokeBetButton">Revoke Bet</button>
-
-  <script src="https://cdn.jsdelivr.net/npm/web3@1.5.2/dist/web3.min.js"></script>
-  <script src="app.js"></script>
+    <!-- Include Web3.js -->
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.5.2/dist/web3.min.js"></script>
+    <!-- Include the app.js script -->
+    <script src="app.js"></script>
 </body>
-
 </html>
