@@ -15,7 +15,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   // Contract details
-  const contractAddress = "0xe602b032997923378055a3BF6bd3cdD7a4570209";
+  const contractAddress = "0xcE3A845d30493edC66Aaa266409c2044Bfb57B92"; // Replace with your contract address
   const contractABI = [
     {
       "anonymous": false,
@@ -171,63 +171,70 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   ];
 
-  const contract = new web3.eth.Contract(contractABI, contractAddress);
+      const contract = new web3.eth.Contract(contractABI, contractAddress);
 
-  // Automatically fetch and display bets for the signed-in address
-  async function fetchBetsForUser() {
+    async function placeBet(receiver, betAmount) {
+        try {
+            const accounts = await web3.eth.getAccounts();
+            const sender = accounts[0];
+            const value = web3.utils.toWei(betAmount, "ether"); // Convert Ether to Wei
+
+            await contract.methods.placeBet(receiver).send({ from: sender, value });
+            document.getElementById("placeBetOutput").textContent = "Bet placed successfully!";
+        } catch (err) {
+            console.error("Error placing bet:", err);
+            document.getElementById("placeBetOutput").textContent = `Error: ${err.message}`;
+        }
+    }
+
+    async function acceptBet(index, betAmount) {
+        try {
+            const accounts = await web3.eth.getAccounts();
+            const sender = accounts[0];
+            const value = web3.utils.toWei(betAmount, "ether"); // Convert Ether to Wei
+
+            await contract.methods.acceptBet(index).send({ from: sender, value });
+            document.getElementById("acceptBetOutput").textContent = "Bet accepted successfully!";
+        } catch (err) {
+            console.error("Error accepting bet:", err);
+            document.getElementById("acceptBetOutput").textContent = `Error: ${err.message}`;
+        }
+    }
+
+    async function getBets(userAddress, index) {
+      console.log("getBets called with:");
+      console.log("User Address:", userAddress);
+      console.log("Index (hard-coded):", index);
+  
       try {
-          const accounts = await web3.eth.getAccounts();
-          const userAddress = accounts[0];
-
-          console.log("Fetching bets for address:", userAddress);
-
-          const pendingBets = [];
-          const maxBetsToCheck = 10;
-
-          for (let i = 0; i < maxBetsToCheck; i++) {
-              try {
-                  const bet = await contract.methods.bets(userAddress, i).call();
-                  if (bet && bet.sender !== "0x0000000000000000000000000000000000000000") {
-                      pendingBets.push(bet);
-                  } else {
-                      break;
-                  }
-              } catch (err) {
-                  console.log(`No bet found at index ${i}:`, err.message);
-                  break;
-              }
-          }
-
-          console.log("Fetched Bets:", pendingBets);
-          displayBets(pendingBets);
+          const bet = await contract.methods.bets(userAddress, index).call();
+          console.log("Fetched Bet:", bet);
+          document.getElementById("fetchBetsOutput").textContent = JSON.stringify(bet, null, 2);
       } catch (err) {
           console.error("Error fetching bets:", err);
+          document.getElementById("fetchBetsOutput").textContent = `Error: ${err.message}`;
       }
   }
 
-  function displayBets(bets) {
-      const betsDiv = document.getElementById("fetchBetsOutput");
-      betsDiv.innerHTML = "";
-
-      if (bets.length === 0) {
-          betsDiv.textContent = "No pending bets found.";
-          return;
+    // Attach button actions
+    document.getElementById("placeBetButton").addEventListener("click", async () => {
+        const receiver = document.getElementById("receiverAddress").value;
+        const betAmount = document.getElementById("betAmount").value;
+        await placeBet(receiver, betAmount);
+    });
+  });
+  
+  async function getBets(userAddress, index) {
+      console.log("Calling getBets with:");
+      console.log("User Address:", userAddress);
+      console.log("Index:", index);
+  
+      try {
+          const bet = await contract.methods.bets(userAddress, index).call();
+          console.log("Fetched Bet:", bet);
+          document.getElementById("fetchBetsOutput").textContent = JSON.stringify(bet, null, 2);
+      } catch (err) {
+          console.error("Error fetching bets:", err);
+          document.getElementById("fetchBetsOutput").textContent = `Error: ${err.message}`;
       }
-
-      bets.forEach((bet, index) => {
-          const betDiv = document.createElement("div");
-          betDiv.className = "bet-entry";
-          betDiv.innerHTML = `
-              <p><strong>Bet ${index + 1}:</strong></p>
-              <p>Sender: ${bet.sender}</p>
-              <p>Receiver: ${bet.receiver}</p>
-              <p>Amount: ${web3.utils.fromWei(bet.betAmount, "ether")} POL</p>
-              <p>Created At: ${new Date(bet.createdAt * 1000).toLocaleString()}</p>
-              <p>Accepted: ${bet.betAccepted ? "Yes" : "No"}</p>
-              <hr />
-          `;
-          betsDiv.appendChild(betDiv);
-      });
   }
-  fetchBetsForUser();
-});
